@@ -11,9 +11,9 @@ const {compare: naturalSort} = new Intl.Collator(undefined, {
 
 const availableHashes: ReadonlyArray<string> = getHashes().sort(naturalSort)
 
-const hashFile = (filename: string) => {
+const hashFile = (filename: string, algorithm: string) => {
   return new Promise<string>((resolve) => {
-    const hash = createHash('sha256')
+    const hash = createHash(algorithm)
     const input = createReadStream(filename)
     input.on('readable', () => {
       const data = input.read()
@@ -54,7 +54,7 @@ if (!availableHashes.includes(algorithm)) {
   if (paths.length) {
     const queueConcurrency = concurrency === '0' ? Infinity : Number(concurrency)
     const queue = new PQueue({concurrency: queueConcurrency})
-    const hashes = await queue.addAll(paths.map((filename) => () => hashFile(filename)))
+    const hashes = await queue.addAll(paths.map((filename) => () => hashFile(filename, algorithm)))
     console.log(hashes.join('\n'))
   } else if (verbose) {
     console.log('No files found matching glob pattern')
